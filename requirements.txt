@@ -1,0 +1,6 @@
+streamlit~=1.59.2
+opencv-python~=5.0.0.93
+numpy~=2.4.6
+mysql-connector-python~=9.7.0
+tensorflow~=2.21.0
+deepface~=0.0.100
