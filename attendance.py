@@ -99,7 +99,7 @@ def recognize_student(face, students):
             best_score = score
             best_student = student
 
-    if best_score > 0.60:
+    if best_score > 0.70:
 
         return best_student, best_score
 

@@ -35,8 +35,6 @@ Modules Included
 
 • Gemini AI Assistant
 
-• Analytics Dashboard
-
 • Settings
 """
 )
