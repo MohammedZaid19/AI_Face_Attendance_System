@@ -5,8 +5,9 @@ pandas
 mysql-connector-python
 deepface
 tensorflow
+tf-keras
 scikit-learn
 python-dotenv
-google-generativeai
+google-genai
 Pillow
 ultralytics
