@@ -139,7 +139,7 @@ The system will
 
 • Detect Face using YuNet
 
-• Generate ArcFace Embedding
+• Generate SFace Embedding
 
 • Match with Database
 
@@ -162,7 +162,7 @@ if photo is not None:
             cv2.COLOR_RGB2BGR
         )
 
-        annotated_frame, results = process_attendance_frame(frame)
+        annotated_frame, results, debug_messages = process_attendance_frame(frame)
 
         annotated_rgb = cv2.cvtColor(
             annotated_frame,
@@ -174,6 +174,15 @@ if photo is not None:
         caption="Detected Faces",
         use_container_width=True
     )
+
+    # Show match/debug info directly on screen for troubleshooting
+    if debug_messages:
+
+        with st.expander("🔍 Match Details (debug info)", expanded=True):
+
+            for msg in debug_messages:
+
+                st.code(msg)
 
     if len(results) == 0:
 
@@ -224,4 +233,4 @@ else:
 
 st.markdown("---")
 
-st.caption("AI Face Attendance System using YuNet + ArcFace + DeepFace")
+st.caption("AI Face Attendance System using YuNet + SFace")
