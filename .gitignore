@@ -7,3 +7,4 @@ attendance_report.csv
 results_haar/
 results_yunet/
 images/
+.streamlit/secrets.toml
