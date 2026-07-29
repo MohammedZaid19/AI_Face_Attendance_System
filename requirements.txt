@@ -3,10 +3,6 @@ opencv-python-headless
 numpy
 pandas
 mysql-connector-python
-deepface
-tensorflow
-tf-keras
-scikit-learn
 python-dotenv
 google-genai
 Pillow

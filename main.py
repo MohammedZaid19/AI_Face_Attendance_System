@@ -2,9 +2,10 @@ import os
 import json
 import cv2
 import mysql.connector
-from deepface import DeepFace
 
 from db import connect_database as _connect_database
+from models.yunet_detector import detect_faces
+from models.sface_recognizer import get_embedding
 
 
 # =====================================
@@ -47,19 +48,27 @@ def save_face_image(face_image_bgr, roll_number):
 
 
 # =====================================
-# Generate ArcFace Embedding
+# Generate SFace Embedding
+#
+# Detects the face in the captured photo
+# using YuNet, then generates a 128-d
+# SFace embedding for it. Returns None
+# if no face was detected.
 # =====================================
 
-def generate_embedding(image_path):
+def generate_embedding(face_image_bgr):
 
-    embedding = DeepFace.represent(
-        img_path=image_path,
-        model_name="ArcFace",
-        detector_backend="skip",
-        enforce_detection=False
-    )
+    faces = detect_faces(face_image_bgr)
 
-    return embedding[0]["embedding"]
+    if faces is None or len(faces) == 0:
+        return None
+
+    # Use the first detected face
+    face_row = faces[0]
+
+    embedding = get_embedding(face_image_bgr, face_row)
+
+    return embedding.flatten().tolist()
 
 
 # =====================================
@@ -89,12 +98,21 @@ def register_student(student_name,
     image_path = save_face_image(face_image_bgr, roll_number)
 
     # ----------------------------
-    # Generate ArcFace Embedding
+    # Generate SFace Embedding
     # ----------------------------
 
     try:
 
-        embedding = generate_embedding(image_path)
+        embedding = generate_embedding(face_image_bgr)
+
+        if embedding is None:
+
+            print("❌ No Face Detected In Captured Photo")
+
+            cursor.close()
+            connection.close()
+
+            return False
 
     except Exception as e:
 
@@ -165,7 +183,7 @@ def register_student(student_name,
         print("\n===================================")
         print("✅ Student Registered Successfully")
         print("✅ Face Image Saved")
-        print("✅ ArcFace Embedding Generated")
+        print("✅ SFace Embedding Generated")
         print("✅ Embedding Stored in MySQL")
         print("===================================")
 

@@ -1,11 +1,10 @@
 import json
 import cv2
 import numpy as np
-from deepface import DeepFace
-from sklearn.metrics.pairwise import cosine_similarity
 
 from attendance_utils import mark_attendance
 from models.yunet_detector import detect_faces
+from models.sface_recognizer import get_embedding, compare_embeddings, COSINE_THRESHOLD
 from db import connect_database
 
 
@@ -37,55 +36,41 @@ def load_embeddings():
 
     for student in students:
 
-        student["embedding"] = np.array(
-            json.loads(student["embedding"])
+        embedding_array = np.array(
+            json.loads(student["embedding"]),
+            dtype=np.float32
         )
 
+        # SFace expects a (1, 128) shaped array
+        student["embedding"] = embedding_array.reshape(1, -1)
+
     return students
-
-
-# =====================================
-# Generate Embedding
-# =====================================
-
-def generate_embedding(face):
-
-    embedding = DeepFace.represent(
-        img_path=face,
-        model_name="ArcFace",
-        detector_backend="skip",
-        enforce_detection=False
-    )
-
-    return np.array(
-        embedding[0]["embedding"]
-    )
 
 
 # =====================================
 # Recognize Student
 # =====================================
 
-def recognize_student(face, students):
+def recognize_student(frame, face_row, students):
 
-    query_embedding = generate_embedding(face)
+    query_embedding = get_embedding(frame, face_row)
 
     best_score = -1
     best_student = None
 
     for student in students:
 
-        score = cosine_similarity(
-            [query_embedding],
-            [student["embedding"]]
-        )[0][0]
+        score = compare_embeddings(
+            query_embedding,
+            student["embedding"]
+        )
 
         if score > best_score:
 
             best_score = score
             best_student = student
 
-    if best_score > 0.70:
+    if best_score > COSINE_THRESHOLD:
 
         return best_student, best_score
 
@@ -119,21 +104,17 @@ def process_attendance_frame(frame):
 
     if faces is not None:
 
-        for face in faces:
+        for face_row in faces:
 
-            x, y, w, h = face[:4].astype(int)
+            x, y, w, h = face_row[:4].astype(int)
 
             x, y = max(x, 0), max(y, 0)
-
-            crop = frame[y:y+h, x:x+w]
-
-            if crop.size == 0:
-                continue
 
             try:
 
                 student, score = recognize_student(
-                    crop,
+                    frame,
+                    face_row,
                     students
                 )
 
