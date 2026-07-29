@@ -101,7 +101,7 @@ with c2:
     st.success("""
 📷 Attendance
 
-Real-time webcam
+Browser Camera Capture
 
 YuNet Detection
 
@@ -127,13 +127,13 @@ st.header("Project Workflow")
 st.code("""
 Student Registration
         ↓
-Capture Face
+Capture Face (Browser Camera)
         ↓
 Generate ArcFace Embedding
         ↓
 Store in MySQL
         ↓
-Live Webcam
+Attendance Photo Capture
         ↓
 YuNet Detects Face
         ↓

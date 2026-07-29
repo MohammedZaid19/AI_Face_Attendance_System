@@ -1,4 +1,7 @@
 import streamlit as st
+import numpy as np
+import cv2
+from PIL import Image
 from main import register_student
 
 # =====================================
@@ -49,6 +52,12 @@ with left:
         "🏫 Department"
     )
 
+    st.subheader("📷 Capture Face")
+
+    photo = st.camera_input(
+        "Look at the camera and take a photo"
+    )
+
 # =====================================
 # Right Column
 # =====================================
@@ -72,7 +81,7 @@ with right:
 st.markdown("---")
 
 if st.button(
-    "📷 Capture Face & Register Student",
+    "📷 Register Student",
     use_container_width=True
 ):
 
@@ -84,14 +93,28 @@ if st.button(
 
         st.warning("Please fill all the fields.")
 
+    elif photo is None:
+
+        st.warning("Please capture a photo using the camera above.")
+
     else:
 
-        with st.spinner("Opening webcam..."):
+        with st.spinner("Processing face and saving student..."):
+
+            # Convert the captured photo (browser camera) into
+            # a BGR numpy array, the format OpenCV/DeepFace expect
+            image = Image.open(photo)
+
+            face_image_bgr = cv2.cvtColor(
+                np.array(image.convert("RGB")),
+                cv2.COLOR_RGB2BGR
+            )
 
             success = register_student(
                 student_name,
                 roll_number,
-                department
+                department,
+                face_image_bgr
             )
 
         if success:
@@ -102,7 +125,7 @@ if st.button(
 
         else:
 
-            st.error("Registration Failed!")
+            st.error("Registration Failed! Please check the photo and try again.")
 
 # =====================================
 # Workflow
@@ -116,7 +139,7 @@ st.code(
 """
 Student Details
        ↓
-Capture Face (Webcam)
+Capture Face (Browser Camera)
        ↓
 YuNet Detects Face
        ↓
@@ -140,7 +163,7 @@ st.info(
 """
 The registration process performs the following operations automatically:
 
-• Captures the student's face using the webcam
+• Captures the student's face using your browser's camera
 
 • Detects the face using YuNet
 
